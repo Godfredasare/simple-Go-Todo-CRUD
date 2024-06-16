@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/Godasare/go-todo/database"
 	"github.com/Godasare/go-todo/models"
@@ -12,9 +11,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var ctx, cancel = context.WithTimeout(context.Background(), 20*time.Second)
+// var ctx, cancel = context.WithTimeout(context.Background(), 20*time.Second)
 
-func FindAllTodo() []primitive.M {
+func FindAllTodo() []models.ToDo {
 	collection := database.GetCollection("todos")
 	filter := bson.M{}
 
@@ -23,18 +22,28 @@ func FindAllTodo() []primitive.M {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer cursor.Close(context.Background())
 
-	var todos []primitive.M
-	for cursor.Next(context.Background()) {
-		var todo bson.M
-		err = cursor.Decode(&todo)
-		if err != nil {
-			log.Fatal(err)
-		}
-		todos = append(todos, todo)
+	var todos []models.ToDo
+
+	err = cursor.All(context.TODO(), &todos)
+	if err != nil {
+		log.Fatal(err)
 	}
 	return todos
+
+	/*Another way of using the cursor to get all data*/
+
+	//var todos []primitive.M
+	// for cursor.Next(context.Background()) {
+	// 	var todo bson.M
+	// 	err = cursor.Decode(&todo)
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// 	todos = append(todos, todo)
+	// }
 }
 
 func InsertTodo(todo models.ToDo) {
